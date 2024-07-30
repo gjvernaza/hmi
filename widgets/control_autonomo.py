@@ -133,7 +133,7 @@ def ControlAutonomo(s: socket.socket, page: ft.Page):
 
         # Definir punto de parada con 
         if len(points_x) > 3:
-            stop_index = sizePoints - 220
+            stop_index = sizePoints - 250
         else:
             stop_index = sizePoints - 160
 
@@ -142,14 +142,15 @@ def ControlAutonomo(s: socket.socket, page: ft.Page):
         for k in range(N):
             start_time = time.time()
             # punto mas cercano
-            min_dist = 2000
+            min_dist = 5
             for i in range(sizePoints):
                 dist = np.sqrt((pxd[i]-hx[k])**2 + (pyd[i]-hy[k])**2)
                 if dist < min_dist:
                     min_dist = dist
                     index = i
             # Verificar si el robot está en la última sección del camino y ha alcanzado el índice de parada
-            if index >= stop_index:            
+            if index >= stop_index:  
+                                       
                 break
             # Error
             hxe[k] = pxd[index] - hx[k]
@@ -162,18 +163,18 @@ def ControlAutonomo(s: socket.socket, page: ft.Page):
                           [np.sin(theta[k]), np.cos(theta[k]), 0],
                           [0, 0, 1]])
             # Parámetros de control
-            ##K = 0.82*np.array([[1.2, 0, 0],  con ts-time_slapsed
-            ##                   [0, 1.8, 0],
-            ##                   [0, 0, 1.5]])
+            K = 0.82*np.array([[1.2, 0, 0],  # con ts-time_slapsed
+                               [0, 1.8, 0],
+                               [0, 0, 1.5]])
             ##K = 0.82*np.array([[1.2, 0, 0],
             ##                   [0, 1.35, 0],
             ##                   [0, 0, 1.3]])
             ##K = 0.82*np.array([[3.2, 0, 0],
             ##                   [0, 2.9, 0],
             ##                   [0, 0, 1.39]])
-            K = 0.82*np.array([[3.2, 0, 0],
-                               [0, 2.9, 0],
-                               [0, 0, 1.39]])
+            ##K = 0.82*np.array([[3.2, 0, 0],
+            ##                   [0, 2.9, 0],
+            ##                   [0, 0, 1.39]])
             # Velocidades de referencia
             pxdp = vMax * np.cos(beta[index])
             pydp = vMax * np.sin(beta[index])

@@ -4,7 +4,7 @@ import cv2
 import numpy as np
 
 #url_camera = "http://192.168.1.2:4747/video"
-url_camera = 2
+url_camera = 1
 # Cargar diccionario y parámetros de Aruco
 aruco_dict = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_6X6_250)
 aruco_params = cv2.aruco.DetectorParameters()
@@ -20,6 +20,8 @@ class Camera(ft.UserControl):
     def __init__(self, cap=cv2.VideoCapture(url_camera)):
         super().__init__()
         self.cap = cap
+        self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)
+        self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)
         self.image = None
         self.image_base64 = None
         self.width = 640
