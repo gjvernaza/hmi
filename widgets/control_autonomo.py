@@ -6,8 +6,10 @@ import matplotlib.pyplot as plt
 import time
 import threading
 
+from services.camera import Camera
 
-def ControlAutonomo(s: socket.socket, page: ft.Page):
+
+def ControlAutonomo(s: socket.socket, page: ft.Page, camera: Camera):
 
     ############## Condiciones deseadas (trayectoria) ############
     div = 3000
@@ -16,35 +18,39 @@ def ControlAutonomo(s: socket.socket, page: ft.Page):
     pxd = None
     pyd = None
     selected = False
-
+    
+    
     def select_route(event):
         nonlocal selected, pxd, pyd, points_x, points_y, div, send_button
+        
         selected = True
         send_button.disabled = False
         value = event.control.value
         if value == "c1":
-            ponits_x = [0, -0.86, -0.86, 2.4]  # puntos y
-            ponits_y = [0, 0, -2.3, -2.3]  # puntos x
-
+            points_x = [0, 0.86]  # puntos y
+            points_y = [0, 0]  # puntos x
+            camera.clean_frame()
+            camera.set_points(points_x=points_y, points_y=points_x)
             px = []
             py = []
 
-            for i in range(len(ponits_x)-1):
-                px.append(np.linspace(ponits_x[i], ponits_x[i+1], div))
-                py.append(np.linspace(ponits_y[i], ponits_y[i+1], div))
+            for i in range(len(points_x)-1):
+                px.append(np.linspace(points_x[i], points_x[i+1], div))
+                py.append(np.linspace(points_y[i], points_y[i+1], div))
 
             pxd = np.hstack(px)
             pyd = np.hstack(py)
         elif value == "c2":
-            ponits_x = [0, -0.86, -0.86]  # puntos y
-            ponits_y = [0, 0, -2.3]  # puntos x
-
+            points_x = [0, 0.86, 1.72]  # puntos y
+            points_y = [0, 0.86, 0.86]  # puntos x
+            camera.clean_frame()
+            camera.set_points(points_x=points_y, points_y=points_x)
             px = []
             py = []
 
-            for i in range(len(ponits_x)-1):
-                px.append(np.linspace(ponits_x[i], ponits_x[i+1], div))
-                py.append(np.linspace(ponits_y[i], ponits_y[i+1], div))
+            for i in range(len(points_x)-1):
+                px.append(np.linspace(points_x[i], points_x[i+1], div))
+                py.append(np.linspace(points_y[i], points_y[i+1], div))
 
             pxd = np.hstack(px)
             pyd = np.hstack(py)
@@ -212,13 +218,17 @@ def ControlAutonomo(s: socket.socket, page: ft.Page):
         
         threading.Thread(target=simulation).start()
         page.update()
+    
+    
 
     send_button = ft.ElevatedButton(
         content=ft.Text("Iniciar"),
         on_click=init_simulation,
     )
+    
 
     send_button.disabled = True
+    
 
     return ft.Container(
         width=200,
@@ -230,10 +240,12 @@ def ControlAutonomo(s: socket.socket, page: ft.Page):
                         controls=[
                             ft.Radio(value="c1", label="Estación 1"),
                             ft.Radio(value="c2", label="Estación 2"),
+
                         ]
                     ),
                 ),
                 send_button,
+                
             ]
         )
     )

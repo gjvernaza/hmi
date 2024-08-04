@@ -11,6 +11,7 @@ from widgets.header import Header
 def main(page: ft.Page):
     def radiogroup_changed(event):
         value = event.control.value
+        clean_button.disabled = False
         if value == "manual":
             control_manual.disabled = False
             control_manual.opacity = 1.0
@@ -44,6 +45,9 @@ def main(page: ft.Page):
                 
         page.update()
 
+    def clean_frame(event):
+        camera.clean_frame()
+        page.update()
     
     # parametros principales de la página
     page.theme_mode = ft.ThemeMode.LIGHT
@@ -67,17 +71,23 @@ def main(page: ft.Page):
     # Crear un hilo para la conexión del socket
     thread = threading.Thread(target=connect_socket(s))
     
-    
+    clean_button = ft.ElevatedButton(
+        content=ft.Text("Limpiar"),
+        on_click=clean_frame,
+    )
+    clean_button.disabled = True
+
     control_manual = ControlManual(socket=s)
     control_manual.disabled = True
     control_manual.opacity = 0.5
 
-    control_autonomo = ControlAutonomo(s=s, page=page)
-    control_autonomo.disabled = True
-    control_autonomo.opacity = 0.5
-
     camera = Camera()
     camera.visible = False
+    
+    control_autonomo = ControlAutonomo(s=s, page=page, camera=camera)
+    control_autonomo.disabled = True
+    control_autonomo.opacity = 0.5
+    
 
     activate_camera = ft.Switch(
         value=False,
@@ -102,6 +112,7 @@ def main(page: ft.Page):
                                     radio_group,
                                     control_manual,
                                     control_autonomo,
+                                    clean_button,
                                 ],
                             ),
                         ),
