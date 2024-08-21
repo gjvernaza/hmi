@@ -100,9 +100,9 @@ class Camera(ft.UserControl):
                         self._py = self._points_y
                         
                         if self._points_x[1] == 1.1:
-                            self.image_point = [(180,666),(345,845),(1150,390)]
+                            self.image_point = [(210,624),(345,845),(1150,390)]
                         elif self._points_x[1] == 2.2:
-                            self.image_point = [(180,666),(590,1050),(1390,480)]
+                            self.image_point = [(210,624),(590,1050),(1390,480)]
                         
                         for x_m, y_m in zip(self._px, self._py):
                           
