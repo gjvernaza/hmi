@@ -1,24 +1,45 @@
+
+# Inicia la captura de video desde la cámara (normalmente 0 es la cámara predeterminada)
+##cap = cv2.VideoCapture(0)
+
 import cv2
-from time import sleep
-#cap = cv2.VideoCapture("http://192.168.0.101/1600x1200.jpg")
-cap = cv2.VideoCapture(1)
-# Establece la resolución deseada
-cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)
-cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)
+
+# Define la función de callback para manejar el evento de clic del ratón
+
+
+def click_event(event, x, y, flags, param):
+    if event == cv2.EVENT_LBUTTONDOWN:
+        # Muestra las coordenadas en la imagen
+        font = cv2.FONT_HERSHEY_SIMPLEX
+        cv2.putText(frame, f'({x},{y})', (x, y), font, 0.5, (255, 0, 0), 2)
+        cv2.imshow('Cámara', frame)
+        print(f'Coordenadas: ({x}, {y})')
+
+
+# Inicia la captura de la cámara
+cap = cv2.VideoCapture(2)
+#cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)
+#cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)
 
 while True:
-    #cap.open("http://192.168.0.101/640x480.jpg")
+    # Lee un frame de la cámara
     ret, frame = cap.read()
-    frame = cv2.resize(frame, (640, 480))
+    cv2.resize(frame, (1920,1080))
     if not ret:
-        print("Error al abrir la cámara")
         break
-    cv2.imshow('frame', frame)
+
+    # Muestra el frame en una ventana
+    
+    cv2.imshow('Cámara', frame)
+    
+    
+    # Registra la función de callback para la ventana
+    cv2.setMouseCallback('Cámara', click_event)
+
+    # Espera la tecla 'q' para salir
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
-        # Obtiene las dimensiones de la cámara
-    frame_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-    frame_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-    
-    print(f"Resolución de la cámara: {frame_width} x {frame_height}")
-    
+
+# Libera la cámara y destruye las ventanas
+cap.release()
+cv2.destroyAllWindows()

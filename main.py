@@ -70,7 +70,7 @@ def main(page: ft.Page):
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     # Crear un hilo para la conexión del socket
     thread = threading.Thread(target=connect_socket(s))
-    
+    thread.start()
     clean_button = ft.ElevatedButton(
         content=ft.Text("Limpiar"),
         on_click=clean_frame,
@@ -128,7 +128,7 @@ def main(page: ft.Page):
         ),
     )
     page.update()
-    thread.start()
+    
 
 
 ft.app(main, name="My App")

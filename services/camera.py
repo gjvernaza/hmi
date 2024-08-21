@@ -4,15 +4,15 @@ import cv2
 import numpy as np
 
 #url_camera = "http://192.168.1.2:4747/video"
-url_camera = 1
+url_camera = 2
 # Cargar diccionario y parámetros de Aruco
 aruco_dict = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_6X6_250)
 aruco_params = cv2.aruco.DetectorParameters()
 
 # Cargar datos de calibración
 calibration_data = np.load("calibration_data.npz")
-marker_size = 0.15  # Tamaño del marcador en metros
-
+marker_size = 0.145  # Tamaño del marcador en metros
+print(calibration_data["mtx"])
 
 
 class Camera(ft.UserControl):
@@ -35,6 +35,7 @@ class Camera(ft.UserControl):
         # Lista para almacenar una vez los puntos de las coordenadas x e y
         self._px = None
         self._py = None
+        #self.image_point = [(180,666),(400,846),(1130,420)]
         self.image_point = []
         
         
@@ -77,6 +78,7 @@ class Camera(ft.UserControl):
                 # Guardar la posición inicial del centro del marcador si aún no se ha guardado
                 if self._initial_marker_center is None:
                     self._initial_marker_center = self.marker_center
+                    print(self._initial_marker_center)
                     
                 
                 # Guardar la posición actual del marcador
@@ -92,19 +94,30 @@ class Camera(ft.UserControl):
                         cv2.line(frame, self._marker_positions[j - 1], self._marker_positions[j], (0, 255, 0), 5)
                 
                 if len(self._points_x) > 0 and len(self._points_y) > 0:
+                    #print("points")
                     if self._px is None and self._py is None:
                         self._px = self._points_x
                         self._py = self._points_y
+                        
+                        if self._points_x[1] == 1.1:
+                            self.image_point = [(180,666),(345,845),(1150,390)]
+                        elif self._points_x[1] == 2.2:
+                            self.image_point = [(180,666),(590,1050),(1390,480)]
+                        
                         for x_m, y_m in zip(self._px, self._py):
+                          
                             marker_point = np.array([[x_m, y_m, 0]]).astype(np.float32)
-                            point_pixels, _ = cv2.projectPoints(marker_point, rvects, tvects, mtx, dist)
-                            self.image_point.append(tuple(point_pixels.ravel().astype(int)))
+                            #point_pixels, _ = cv2.projectPoints(marker_point, rvects, tvects, mtx, dist)
+                            #print(point_pixels)
+                            #self.image_point.append(tuple(point_pixels.ravel().astype(int)))
+                            
+                            
                             
 
                 if self._px is not None and self._py is not None:
                     for k in range(len(self.image_point)-1):
                         #cv2.circle(frame, (self.image_point[k]), 10, (0, 255, 0), -1)
-                        cv2.line(frame, self.image_point[k], self.image_point[k+1], (255, 255, 0), 4)
+                        cv2.line(frame, self.image_point[k], self.image_point[k+1], (0, 0, 255), 4)
                     
 
     def update_timer(self):

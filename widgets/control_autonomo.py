@@ -1,10 +1,10 @@
 import flet as ft
 import socket
 import numpy as np
-import pandas as pd
-import matplotlib.pyplot as plt
 import time
 import threading
+from matplotlib import pyplot as plt
+
 
 from services.camera import Camera
 
@@ -27,8 +27,8 @@ def ControlAutonomo(s: socket.socket, page: ft.Page, camera: Camera):
         send_button.disabled = False
         value = event.control.value
         if value == "c1":
-            points_x = [0, 0.86]  # puntos y
-            points_y = [0, 0]  # puntos x
+            points_x = [0, 0, 2.9]  # puntos y
+            points_y = [0, 1.1, 1.1]  # puntos x
             camera.clean_frame()
             camera.set_points(points_x=points_y, points_y=points_x)
             px = []
@@ -41,8 +41,9 @@ def ControlAutonomo(s: socket.socket, page: ft.Page, camera: Camera):
             pxd = np.hstack(px)
             pyd = np.hstack(py)
         elif value == "c2":
-            points_x = [0, 0.86, 1.72]  # puntos y
-            points_y = [0, 0.86, 0.86]  # puntos x
+            points_x = [0, 0, 2.9]  # puntos y
+            points_y = [0, 2.2, 2.2]  # puntos x
+            
             camera.clean_frame()
             camera.set_points(points_x=points_y, points_y=points_x)
             px = []
@@ -80,7 +81,7 @@ def ControlAutonomo(s: socket.socket, page: ft.Page, camera: Camera):
         theta[0] = 0*(np.pi/180)  # orientación inicial
 
         ############## Camino a seguir #############
-        vMax = 0.4  # velocidad máxima del robot
+        vMax = 0.22  # velocidad máxima del robot
     
         sizePoints = len(pxd)
 
@@ -92,7 +93,7 @@ def ControlAutonomo(s: socket.socket, page: ft.Page, camera: Camera):
             else:
                 beta[i] = np.arctan2(pyd[i]-pyd[i-1], pxd[i]-pxd[i-1])
 
-        thetad = -2*(np.pi/180)*np.ones(N)  # orientación deseada
+        thetad = 0.8*(np.pi/180)*np.ones(N)  # orientación deseada
 
         thetad_dot = np.zeros(N)  # velocidad angular deseada
 
@@ -134,12 +135,10 @@ def ControlAutonomo(s: socket.socket, page: ft.Page, camera: Camera):
             return [vf, vl, w]
 
 
-        # Crear el socket TCP/IP       
-        time.sleep(1)
 
         # Definir punto de parada con 
         if len(points_x) > 3:
-            stop_index = sizePoints - 250
+            stop_index = sizePoints - 200
         else:
             stop_index = sizePoints - 160
 
@@ -148,7 +147,8 @@ def ControlAutonomo(s: socket.socket, page: ft.Page, camera: Camera):
         for k in range(N):
             start_time = time.time()
             # punto mas cercano
-            min_dist = 5
+            #min_dist = 10
+            min_dist = 10
             for i in range(sizePoints):
                 dist = np.sqrt((pxd[i]-hx[k])**2 + (pyd[i]-hy[k])**2)
                 if dist < min_dist:
@@ -169,18 +169,13 @@ def ControlAutonomo(s: socket.socket, page: ft.Page, camera: Camera):
                           [np.sin(theta[k]), np.cos(theta[k]), 0],
                           [0, 0, 1]])
             # Parámetros de control
-            K = 0.82*np.array([[1.2, 0, 0],  # con ts-time_slapsed
-                               [0, 1.8, 0],
-                               [0, 0, 1.5]])
-            ##K = 0.82*np.array([[1.2, 0, 0],
-            ##                   [0, 1.35, 0],
-            ##                   [0, 0, 1.3]])
+        
             ##K = 0.82*np.array([[3.2, 0, 0],
             ##                   [0, 2.9, 0],
             ##                   [0, 0, 1.39]])
-            ##K = 0.82*np.array([[3.2, 0, 0],
-            ##                   [0, 2.9, 0],
-            ##                   [0, 0, 1.39]])
+            K = 0.82*np.array([[3.2, 0, 0],
+                               [0, 2.9, 0],
+                               [0, 0, 1.39]])
             # Velocidades de referencia
             pxdp = vMax * np.cos(beta[index])
             pydp = vMax * np.sin(beta[index])
@@ -212,11 +207,65 @@ def ControlAutonomo(s: socket.socket, page: ft.Page, camera: Camera):
             time.sleep(0.05)
 
         #s.close()
-        page.update()
+        # Lanzar un hilo para graficar los resultados
+        #threading.Thread(target=plot_graphs, args=(t, vf_ref, vf_med, vl_ref,
+        #                vl_med, w_ref, w_med, hx, hy, pxd, pyd, hxe, hye, thetae)).start()
+        ##plt.figure()
+##
+        ##plt.plot(t, vf_ref, label='vf_ref')
+        ##plt.plot(t, vf_med, label='vf_med')
+        ##plt.xlabel('Tiempo [s]')
+        ##plt.ylabel('Velocidad Frontal [m/s]')
+        ##plt.legend()
+        ##plt.grid()
+##
+        ##plt.figure()
+        ##plt.plot(t, vl_ref, label='vl_ref')
+        ##plt.plot(t, vl_med, label='vl_med')
+        ##plt.xlabel('Tiempo [s]')
+        ##plt.ylabel('Velocidad Lateral [m/s]')
+        ##plt.legend()
+        ##plt.grid()
+##
+        ##plt.figure()
+        ##plt.plot(t, w_ref, label='w_ref')
+        ##plt.plot(t, w_med, label='w_med')
+        ##plt.xlabel('Tiempo [s]')
+        ##plt.ylabel('Velocidad Angular [rad/s]')
+        ##plt.legend()
+        ##plt.grid()
+##
+        ##plt.figure()
+        ##plt.plot(hy, hx, label='Trayectoria Real')
+        ##plt.plot(pyd, pxd, '--', label='Trayectoria Deseada')
+        ##plt.xlabel('X [m]')
+        ##plt.ylabel('Y [m]')
+        ##plt.legend()
+        ##plt.grid()
+##
+        ##plt.figure()
+        ##plt.plot(t, hxe, label='Error en x')
+        ##plt.plot(t, hye, label='Error en y')
+        ##plt.xlabel('Tiempo [s]')
+        ##plt.ylabel('Error en y [m]')
+        ##plt.legend()
+        ##plt.grid()
+##
+        ##plt.figure()
+        ##plt.plot(t, thetae, label='Error en orientación')
+        ##plt.xlabel('Tiempo [s]')
+        ##plt.ylabel('Error en orientación [rad]')
+        ##plt.legend()
+        ##plt.grid()
+##
+        ##plt.show()
+       
+       
 
     def init_simulation(event):
         
         threading.Thread(target=simulation).start()
+        
         page.update()
     
     
